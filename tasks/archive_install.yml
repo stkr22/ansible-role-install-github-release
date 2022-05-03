@@ -1,0 +1,13 @@
+---
+- name: "Get archive from Github {{ github_latest_download_url | urlsplit('path') }}."
+  become: "{{ use_become }}"
+  ansible.builtin.get_url:
+    url: "{{ github_latest_download_url }}"
+    dest: "/tmp/archive.{{ file_extension_check }}"
+    mode: '0644'
+
+- name: "Extract archive into {{ application_install_dir }}."
+  become: "{{ use_become }}"
+  ansible.builtin.unarchive:
+    src: "/tmp/archive.{{ file_extension_check }}"
+    dest: "{{ application_install_dir }}"

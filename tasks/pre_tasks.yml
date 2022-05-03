@@ -1,0 +1,44 @@
+---
+- name: Verify that required string variables are defined
+  ansible.builtin.assert:
+    that:
+      - "{{ req_var }} is defined"
+      - "{{ req_var }} | length > 0"
+      - "{{ req_var }} != None"
+    fail_msg: "{{ req_var }} needs to be set for the role to work"
+    success_msg: "Required variable {{ req_var }} is defined"
+  loop:
+    - application_install_dir
+    - github_regex_filter
+    - github_repo_path_part
+  loop_control:
+    loop_var: req_var
+
+- name: Get latest version from Github API.
+  register: github_request_latest_output
+  ansible.builtin.uri:
+    url: "https://api.github.com/repos/{{ github_repo_path_part }}/releases/latest"
+    return_content: yes
+
+- name: Extract latest download URL from Github API reponse.
+  ansible.builtin.set_fact:
+    github_latest_matches: "{{ github_request_latest_output.json | json_query('assets[*].browser_download_url') | select('match', github_regex_filter) }}"
+
+- name: Set variables.
+  ansible.builtin.set_fact:
+    github_latest_download_url: "{{ github_latest_matches | first }}"
+    application_name: "{{ application_install_dir | basename | split('.') | first }}"
+  when: github_latest_matches
+
+- name: Running file extension check on download URL.
+  ansible.builtin.set_fact:
+    file_extension_check: "{{ github_latest_download_url | urlsplit('path') | split('.') | last }}"
+  when: github_latest_matches
+
+- name: "Creates target directory for {{ application_name }} ."
+  become: "{{ use_become }}"
+  ansible.builtin.file:
+    path: "{{ application_install_dir | dirname }}"
+    state: directory
+    mode: '0755'
+  when: github_latest_matches

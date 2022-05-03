@@ -1,0 +1,7 @@
+---
+- name: "Get binary from Github {{ github_latest_download_url | urlsplit('path') }} ."
+  become: "{{ use_become }}"
+  ansible.builtin.get_url:
+    url: "{{ github_latest_download_url }}"
+    dest: "{{ application_install_dir }}"
+    mode: +x

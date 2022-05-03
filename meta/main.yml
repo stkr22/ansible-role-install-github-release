@@ -1,0 +1,20 @@
+galaxy_info:
+  author: 'stkr22'
+  role_name: 'install_github_release'
+  description: Use this role to easily install binaries from githubs in ubuntu.
+  company: your company (optional)
+  license: 'GNU General Public License v3'
+  min_ansible_version: '2.0'
+  platforms:
+    - name: Ubuntu
+      versions:
+        - focal
+        - jammy
+        - bionic
+  galaxy_tags:
+    - github
+    - desktop
+    - linux
+    - applications
+
+dependencies: []

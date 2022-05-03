@@ -1,0 +1,24 @@
+---
+- name: Executing defined pre tasks.
+  ansible.builtin.import_tasks: pre_tasks.yml
+
+- name: Executing binary install.
+  ansible.builtin.import_tasks: binary_install.yml
+  when:
+    - github_latest_matches
+    - not (file_extension_check | regex_search('(?i)txz|zip$'))
+
+- name: Executing archive install.
+  ansible.builtin.import_tasks: archive_install.yml
+  when:
+    - github_latest_matches
+    - file_extension_check | regex_search('(?i)txz|zip$')
+
+- name: "Create {{ application_name }} Desktop shortcut."
+  ansible.builtin.template:
+    src: templates/appimage.desktop.j2
+    dest: /home/{{ ansible_facts['user_id'] }}/.local/share/applications/{{ application_name }}.desktop
+    mode: '0644'
+  when:
+    - github_latest_matches
+    - file_extension_check | regex_search('(?i)appimage$')
